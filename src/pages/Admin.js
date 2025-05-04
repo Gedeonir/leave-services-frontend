@@ -72,9 +72,9 @@ function DashboardLayout({ children }) {
 
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen max-h-screen overflow-hidden">
       <Suspense fallback={<div>Loading...</div>}>
-        <div className="grid grid-cols-5 gap-6">
+        <div className="grid grid-cols-5">
           <div className="col-span-1 border-r">
             <aside class="py-4 block z-40 bg-lightGray min-h-screen max-h-screen group">
 
@@ -82,21 +82,25 @@ function DashboardLayout({ children }) {
                 <li onClick={() => setSection('home')} className={`cursor-pointer w-full py-1 my-2 px-2 rounded-l-full ${section === 'home' ? 'bg-primary text-white' : 'text-primary '} flex justify-start hover:text-secondary duration-200 delay-100`}>
                   <span class="py-0.5 mx-2 text-lg">Home</span>
                 </li>
-                <li onClick={() => setSection('leaveType')} className={`cursor-pointer w-full py-1 my-2 px-2 rounded-l-full ${section === 'leaveType' ? 'bg-primary text-white' : 'text-secondary '} flex justify-start hover:text-secondary duration-200 delay-100`}>
+                <li onClick={() => setSection('leaveType')} className={`cursor-pointer w-full py-1 my-2 px-2 rounded-l-full ${section === 'leaveType' ? 'bg-primary text-white' : 'text-primary '} flex justify-start hover:text-secondary duration-200 delay-100`}>
                   <span class="py-0.5 mx-2 text-lg">Manage Leave Types</span>
                 </li>
 
-                <li onClick={() => setSection('employee')} className={`cursor-pointer w-full py-1 my-2 px-2 rounded-l-full ${section === 'employee' ? 'bg-primary text-white' : 'text-secondary '} flex justify-start hover:text-secondary duration-200 delay-100`}>
+                <li onClick={() => setSection('employee')} className={`cursor-pointer w-full py-1 my-2 px-2 rounded-l-full ${section === 'employee' ? 'bg-primary text-white' : 'text-primary '} flex justify-start hover:text-secondary duration-200 delay-100`}>
                   <span class="py-0.5 mx-2 text-lg">Manage Employees</span>
                 </li>
               </ul>
             </aside>
 
           </div>
-          <div className="col-span-4 pr-6 py-4">
+          <div className="col-span-4 px-6 py-4 overflow-y-auto max-h-screen border">
             <TopBar title={"Admin Dashboard"}  employees={employees} userData={userData}/>
 
-            {section === 'home' && <LeaveRequestManager approver={userData}/>}
+            {section === 'home' && 
+            <>
+              <LeaveRequestManager approver={userData}/>
+            </>
+            }
 
             {section === 'leaveType' && <LeaveTypes />}
             {section === 'employee' && <Employee exclude={userData}/>}

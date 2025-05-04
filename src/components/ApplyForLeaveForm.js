@@ -11,7 +11,7 @@ function ApplyForLeaveForm() {
     leaveType: "",
     reason: "",
     file: null,
-    maximumDays:0
+    maximumDays: 0
   });
 
   const [leaveTypes, setLeaveTypes] = useState([]);
@@ -41,17 +41,27 @@ function ApplyForLeaveForm() {
     }
   };
 
+  const [error, setError] = useState('');
+
   const handleSubmit = async e => {
     e.preventDefault();
 
     let documentUrl = "";
+    setError('')
 
     // 1. Upload file if present
     if (formData.file) {
       const uploadData = new FormData();
-      uploadData.append("file", formData.file);
-      const uploadRes = await axios.post("http://localhost:8080/api/upload", uploadData);
-      documentUrl = uploadRes.data.url;
+      uploadData.append("document", formData.file);
+      const uploadRes = await axios.post(`${process.env.BACKEND_URL}/leaves/request/upload`, uploadData,
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("userToken")}`,
+          },
+        }
+      ).catch((error) => console.log(error));
+      documentUrl = uploadRes?.data?.url;
+
     }
 
     // 2. Submit leave request
@@ -63,25 +73,33 @@ function ApplyForLeaveForm() {
       reason: formData.reason,
       documentUrl,
     };
+    
 
-    await axios.post(`${process.env.BACKEND_URL}/leaves/request/new`, payload, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem("userToken")}`,
-      },
-    });
-    alert("Leave request submitted.");
+    try {
+      await axios.post(`${process.env.BACKEND_URL}/leaves/request/new`, payload, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("userToken")}`,
+        },
+      });
+      alert("Leave request submitted.");
+    } catch (error) {
+      setError(error)
+    }
+
+
   };
 
   function formatDate(date) {
     return new Date(date).toISOString().split("T")[0];
   }
-  
+
+
   function addDays(date, days) {
     const result = new Date(date);
     result.setDate(result.getDate() + days);
     return result;
   }
-  
+
 
   return (
     <motion.div
@@ -93,13 +111,19 @@ function ApplyForLeaveForm() {
       <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
         <FilePlus /> Apply for Leave
       </h2>
+      {error && (
+        <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
+          <h3 className="font-semibold">Failed!</h3>
+          <pre className="mt-2 text-sm">{JSON.stringify(error?.response?.data, null, 2)}</pre>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Leave Type</label>
           <select name="leaveType" onChange={handleChange} className="border p-2 rounded w-full" required>
             <option value="">Select a type</option>
             {leaveTypes.map(type => (
-              <option key={type._id} value={type._id}>{type.name}- {type.maximumDays} Days</option>
+              <option key={type._id} value={type._id}>{type.name}</option>
             ))}
           </select>
         </div>
@@ -111,18 +135,18 @@ function ApplyForLeaveForm() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">To</label>
-          <input type="date" 
-          min={formData.startDate?new Date(formData.startDate).toISOString().split("T")[0]:new Date().toISOString().split("T")[0]} 
-          max={
-            formData.startDate
-              ? formatDate(addDays(new Date(formData.startDate), formData.maximumDays))
-              : formatDate(addDays(new Date(), formData.maximumDays))
-          }
-          name="endDate" onChange={handleChange} className="border p-2 rounded w-full" required />
-          
-            <p className="text-red-500 text-sm mt-1">{dateError && dateError}</p>
+          <input type="date"
+            min={formData.startDate ? new Date(formData.startDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}
+            max={
+              formData.startDate
+                ? formatDate(addDays(new Date(formData.startDate), formData.maximumDays))
+                : formatDate(addDays(new Date(), formData.maximumDays))
+            }
+            name="endDate" onChange={handleChange} className="border p-2 rounded w-full" required />
+
+          <p className="text-red-500 text-sm mt-1">{dateError && dateError}</p>
         </div>
-        
+
 
         <input
           type="text"
@@ -133,7 +157,12 @@ function ApplyForLeaveForm() {
         />
 
         <div className="mt-4">
-          <input type="file" name="file" onChange={handleChange} className="block w-full text-sm text-gray-700" />
+          <input type="file" name="file" 
+          onChange={(e)=>setFormData(prev => ({
+          ...prev,
+          file: e.target.files[0],
+        }))} 
+        className="block w-full text-sm text-gray-700" />
           <p className="text-xs text-gray-500 mt-1">Upload medical certificate or other required files (PDF, JPG, PNG).</p>
         </div>
 

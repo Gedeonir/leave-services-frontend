@@ -84,7 +84,7 @@ export default function EmployeeDashboard(props) {
         <Topbar title={"Employee Dashboard"} employees={employees} userData={userData}/>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="col-span-2">
-            <LeaveBalanceCard />
+            <LeaveBalanceCard userData={userData}/>
             <ApplyForLeaveForm />
             <ColleaguesOnLeave colleagues={colleagues} />
           </div>

@@ -78,12 +78,45 @@ export default function LeaveHistoryPage() {
     fetchEmployees()
   }, [])
 
+  const filterLeaves = leaveHistory.filter(item => item.employee === userData?.loggedInUser);
+
+  const downloadCloudinaryFile = async (url, filename) => {
+    try {
+      const downloadUrl = url.replace('/upload/', '/upload/fl_attachment/');
+  
+      const response = await fetch(downloadUrl, {
+        method: 'GET',
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch file');
+      }
+  
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+  
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename; // You can customize the filename here
+      document.body.appendChild(link);
+      link.click();
+  
+      // Clean up
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error.message);
+    }
+  };
+  
+
+
 
 
 
   return (
     <div className="bg-lightGray min-h-screen px-4 md:px-8 py-6">
-      <Topbar title={"Employee Dashboard"}/>
+      <Topbar title={"Employee Dashboard"} />
       <div className="flex justify-start gap-4 items-center py-6">
         <div>
           <Link to={'/dashboard'}><FaArrowLeft className="text-primary text-sm" /></Link>
@@ -94,7 +127,7 @@ export default function LeaveHistoryPage() {
       </div>
 
       <div className="space-y-4">
-        {leaveHistory.map((leave) => (
+        {filterLeaves.map((leave) => (
           <div
             key={leave._id}
             className="bg-white shadow-md rounded-xl p-4 flex items-center gap-4 hover:shadow-lg transition-shadow duration-200"
@@ -112,6 +145,9 @@ export default function LeaveHistoryPage() {
                 {new Date(leave.startDate).toLocaleDateString()} to {new Date(leave.endDate).toLocaleDateString()}
               </p>
               <p className="text-sm text-gray-700 mt-2 italic">"{leave.reason}"</p>
+              {leave.documentUrl &&
+                <div className="italic mt-2 text-sm text-ellipsis">Supporting document:<button onClick={()=>{downloadCloudinaryFile(leave.documentUrl)}} className="text-primary underline">{leave.documentUrl}</button></div>
+              }
               {leave?.status !== 'PENDING' &&
                 <>
                   <hr></hr>
@@ -119,6 +155,8 @@ export default function LeaveHistoryPage() {
                 </>
               }
             </div>
+
+
           </div>
         ))}
 
