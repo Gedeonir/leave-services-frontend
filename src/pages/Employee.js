@@ -3,6 +3,7 @@ import { UserCircle } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { getEmployee } from './LeaveRequestManager';
 import AdjustLeaveBalanceForm from './AddBalances';
+import { FaSync } from 'react-icons/fa';
 
 
 const Employees = (props) => {
@@ -38,7 +39,7 @@ const Employees = (props) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const [response,setResponse]=useState(false);
+    const [response, setResponse] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -98,8 +99,25 @@ const Employees = (props) => {
     }
 
     const [section, setSection] = useState('view');
+    const [message, setMessage] = useState('')
 
-    
+    const accrueLeave = async () => {
+        setMessage("")
+        try {
+            const res = await fetch(`${process.env.BACKEND_URL}/balance/accrue`, { 
+                method: "POST",
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('userToken')}`
+                }
+                
+            });
+            const data = await res.json();
+            setMessage(data.message);
+        } catch(error) {
+            console.log(error);
+            setMessage("Accrual failed.");
+        }
+    };
 
 
 
@@ -136,17 +154,24 @@ const Employees = (props) => {
                     <option value="MANAGER">Manager</option>
                     <option value="ADMIN">Admin</option>
                 </select>
-                {/* <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Password" className="p-2 border rounded" /> */}
-                <button className="col-span-2 bg-secondary text-white p-2 rounded">
+                <button className="col-span-2 bg-secondary text-white p-2 rounded w-full lg:w-1/5 ">
                     {editId ? 'Update' : 'Create'} Employee
                 </button>
             </form>
 
             {response && (
                 <div className="mt-4 p-4 bg-green-100 text-green-700 rounded">
-                <h3 className="font-semibold">Success! Email has been sent to your inbox/spam folder</h3>
+                    <h3 className="font-semibold">Success! Email has been sent to your inbox/spam folder</h3>
                 </div>
             )}
+
+            <div className='flex justify-between items-center'>
+                <div className="mb-4 text-sm text-gray-700">{message && message}</div>
+
+                <button onClick={accrueLeave} className="flex items-center gap-2 bg-transparent text-primary hover:underline px-4 py-2 rounded">
+                    <FaSync />Accrue All
+                </button>
+            </div>
 
             <table className="w-full table-auto text-left text-darkGray">
                 <thead>
@@ -201,7 +226,7 @@ const Employees = (props) => {
                                     {balances.length <= 0 ?
                                         <p>No records found!</p>
                                         :
-                                        balances.map((item)=>(
+                                        balances.map((item) => (
                                             <p key={item._id} className="text-darkGray"><span className='font-semibold text-primary'>{item?.leaveType?.name}:</span>{item.balance}</p>
                                         ))
                                     }
@@ -215,8 +240,8 @@ const Employees = (props) => {
                         }
 
 
-                        {section ==='add' &&
-                            <AdjustLeaveBalanceForm getBalances={fetchBalances} close={setSection} emp={balanceEmp}/>
+                        {section === 'add' &&
+                            <AdjustLeaveBalanceForm getBalances={fetchBalances} close={setSection} emp={balanceEmp} />
                         }
                     </div>
 

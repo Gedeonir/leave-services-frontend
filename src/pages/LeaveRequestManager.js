@@ -12,22 +12,32 @@ const LeaveRequestManager = (props) => {
   const [leaves, setLeaves] = useState([]);
   const [employees, setEmployees] = useState([]);
   const fetchEmployees = async () => {
-    const res = await fetch(`${process.env.Auth_URL}/employees`,
-      {
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('userToken')}`
+    try {
+      const res = await fetch(`${process.env.Auth_URL}/employees`,
+        {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('userToken')}`
+          }
         }
-      }
-    );
-    const data = await res.json();
-    setEmployees(data);
-  };
+      );
+      const data = await res.json();
+      setEmployees(data);
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
 
   const fetchLeaves = async () => {
-    const res = await fetch(`${process.env.BACKEND_URL}/leaves/request/all`);
-    const data = await res.json();
-    setLeaves(data);
+    try {
+      const res = await fetch(`${process.env.BACKEND_URL}/leaves/request/all`);
+      const data = await res.json();
+      setLeaves(data);
+    } catch (error) {
+      console.log(error);
+
+    }
+
   };
 
   useEffect(() => {
@@ -65,14 +75,20 @@ const LeaveRequestManager = (props) => {
   }
 
   const handleUpdateStatus = async (id, status) => {
-    await fetch(`${process.env.BACKEND_URL}/leaves/${id}/status`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, approverId: props?.approver?.loggedInUser, comments: comment }), // adjust this
-    });
+    try {
+      await fetch(`${process.env.BACKEND_URL}/leaves/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, approverId: props?.approver?.loggedInUser, comments: comment }), // adjust this
+      });
 
-    fetchLeaves();
-    setOpen(false);
+      fetchLeaves();
+      setOpen(false);
+    } catch (error) {
+      console.log(error);
+
+    }
+
   }
 
 
@@ -83,10 +99,10 @@ const LeaveRequestManager = (props) => {
       transition={{ delay: 0.1 }}
       className="py-6 relative"
     >
-      <h2 className="text-xl font-bold mb-4">Leave Requests</h2>
+      <h2 className="text-xl font-bold mb-4 text-darkGray">Leave Requests</h2>
 
       {/* Table */}
-      <table className="w-full border-collapse bg-white rounded shadow text-sm">
+      <table className="w-full border-collapse bg-white rounded shadow text-sm text-darkGray">
         <thead>
           <tr className="bg-gray-100 text-left">
             <th className="p-2">Employee</th>
@@ -99,9 +115,10 @@ const LeaveRequestManager = (props) => {
         </thead>
         <tbody>
           {leaves.map((leave) => (
+            getEmployee(leave.employee, employees) &&
             <tr key={leave._id} className="border-t">
-              <td className="p-2">{getEmployee(leave.employee, employees).name}</td>
-              <td className="p-2">{getEmployee(leave.employee, employees).email}</td>
+              <td className="p-2">{getEmployee(leave.employee, employees)?.name}</td>
+              <td className="p-2">{getEmployee(leave.employee, employees)?.email}</td>
               <td className="p-2">{leave.leaveType?.name}</td>
               <td className="p-2">{leave.startDate?.slice(0, 10)} → {leave.endDate?.slice(0, 10)}</td>
               <td className="p-2">{leave.status}</td>

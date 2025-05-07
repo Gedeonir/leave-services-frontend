@@ -9,6 +9,7 @@ import LeaveTypes from './LeaveTypes';
 import Employee from './Employee';
 import LeaveRequestManager from './LeaveRequestManager';
 import axios from 'axios';
+import TeamLeaveCalendar from './TeamCalendar';
 
 
 function DashboardLayout({ children }) {
@@ -22,16 +23,20 @@ function DashboardLayout({ children }) {
 
   const [employees, setEmployees] = useState([]);
   const fetchEmployees = async () => {
-    const res = await fetch(`${process.env.Auth_URL}/employees`,
-      {
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('userToken')}`
+    try {
+      const res = await fetch(`${process.env.Auth_URL}/employees`,
+        {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('userToken')}`
+          }
         }
-      }
-    );
-    const data = await res.json();
-    setEmployees(data);
-  };
+      );
+      const data = await res.json();
+      setEmployees(data);
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const verifyUser = async () => {
     try {
@@ -99,6 +104,7 @@ function DashboardLayout({ children }) {
             {section === 'home' && 
             <>
               <LeaveRequestManager approver={userData}/>
+              <TeamLeaveCalendar/>
             </>
             }
 
