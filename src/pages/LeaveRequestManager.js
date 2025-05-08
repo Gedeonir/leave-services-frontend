@@ -78,7 +78,11 @@ const LeaveRequestManager = (props) => {
     try {
       await fetch(`${process.env.BACKEND_URL}/leaves/${id}/status`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${sessionStorage.getItem('userToken')}`
+
+        },
         body: JSON.stringify({ status, approverId: props?.approver?.loggedInUser, comments: comment }), // adjust this
       });
 
