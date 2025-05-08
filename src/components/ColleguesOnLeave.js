@@ -15,6 +15,11 @@ function ColleaguesOnLeave({ colleagues }) {
         <Users /> Colleagues on Leave
       </h2>
       <div className="flex space-x-4 overflow-x-auto">
+        {colleagues.length === 0 && (
+          <div className="text-center flex-shrink-0">
+            <p className="text-sm mt-1">No colleagues on leave</p>
+          </div>
+        )}
         {colleagues.map((c, i) => (
           <div key={i} className="text-center flex-shrink-0">
             <img

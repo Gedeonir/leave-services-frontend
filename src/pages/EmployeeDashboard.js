@@ -12,14 +12,9 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function EmployeeDashboard(props) {
-  const colleagues = [
-    { name: "Amina Yusuf", until: "May 5", img: "https://res.cloudinary.com/gedeoncloud/image/upload/v1741614594/ecomerce/image_4_d3n1j3.png" },
-    { name: "Daniel Mwangi", until: "May 4", img: "https://res.cloudinary.com/gedeoncloud/image/upload/v1741614593/ecomerce/image_2_tnu1hi.png" },
-  ];
 
   const navigate = useNavigate();
   const [userData, setUserData] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [succes, setSuccess] = useState(false)
   const [employees, setEmployees] = useState([]);
   const fetchEmployees = async () => {
@@ -51,11 +46,29 @@ export default function EmployeeDashboard(props) {
     }
   }
 
+  const [colleagues, setColleagues] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  
+  const fetchOnLeave = async () => {
+    try {
+      const res = await axios.get(`${process.env.BACKEND_URL}/leaves/on-leave`);
+      setColleagues(res.data);
+    } catch (err) {
+      console.error('Failed to fetch colleagues on leave:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     verifyUser();
     fetchEmployees();
+    fetchOnLeave();
 
   }, [])
+
+  console.log(colleagues)
 
   useEffect(() => {
     if (employees.length && userData.loggedInUser) {
